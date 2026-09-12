@@ -1,0 +1,52 @@
+.carta {
+  width: 90px;
+  height: 126px;
+  background: #FBF7EC;
+  border-radius: 10px;
+  border: 3px solid #14112B;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+  position: relative;
+  color: #14112B;
+  font-family: 'Baloo 2', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carta.roja {
+  color: #D1393B;
+}
+
+.valor {
+  position: absolute;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.esquina.superior {
+  top: 8px;
+  left: 10px;
+}
+
+.esquina.inferior {
+  bottom: 8px;
+  right: 10px;
+  transform: rotate(180deg);
+}
+
+.palo-central {
+  font-size: 44px;
+}
+
+.carta.dorso {
+  background: repeating-linear-gradient(
+    135deg,
+    #7A4FD1,
+    #7A4FD1 6px,
+    #6440AD 6px,
+    #6440AD 12px
+  );
+  color: #FBF7EC;
+  font-size: 32px;
+  font-weight: 700;
+}

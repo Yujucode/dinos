@@ -1,0 +1,11 @@
+@if (carta(); as c) {
+  <div class="carta" [class.roja]="esRoja()">
+    <span class="valor esquina superior">{{ etiquetaValor() }}</span>
+    <span class="palo-central">{{ simbolo() }}</span>
+    <span class="valor esquina inferior">{{ etiquetaValor() }}</span>
+  </div>
+} @else {
+  <div class="carta dorso">
+    <span>?</span>
+  </div>
+}

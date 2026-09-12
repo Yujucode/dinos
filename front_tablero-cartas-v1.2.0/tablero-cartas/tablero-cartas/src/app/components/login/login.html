@@ -1,0 +1,28 @@
+<div class="pantalla">
+  <div class="tarjeta">
+    <h1>RaceDinos</h1>
+    <p>Ingresa para sentarte a la mesa</p>
+
+    <input
+      type="text"
+      placeholder="Usuario"
+      [ngModel]="usuario()"
+      (ngModelChange)="usuario.set($event)"
+      (keyup.enter)="onIngresar()"
+    />
+
+    <input
+      type="password"
+      placeholder="Contraseña"
+      [ngModel]="contrasena()"
+      (ngModelChange)="contrasena.set($event)"
+      (keyup.enter)="onIngresar()"
+    />
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button (click)="onIngresar()">Entrar a la mesa</button>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    A propósito NO agregamos ningún PackageReference (ni siquiera Swashbuckle/Swagger):
+    el sandbox donde arme este proyecto no tiene salida a nuget.org, así que lo dejé
+    compilando 100% con lo que ya trae el SDK de ASP.NET Core (SignalR, Health Checks,
+    CORS, Options — todo eso viene incluido en el framework compartido, no son paquetes
+    NuGet aparte). Cuando abras esto en Visual Studio 2022 SÍ vas a tener internet, así
+    que si quieres Swagger de vuelta es un solo comando, ver README.md.
+  -->
+
+</Project>

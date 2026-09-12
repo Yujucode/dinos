@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: #14112B;
+  font-family: 'Inter', sans-serif;
+  min-height: 100dvh;
+}

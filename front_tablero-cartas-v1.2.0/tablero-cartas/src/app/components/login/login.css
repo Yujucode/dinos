@@ -1,0 +1,72 @@
+.pantalla {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.tarjeta {
+  background: #1F1B3F;
+  border-radius: 18px;
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: 0 10px 0 #14112B;
+}
+
+.tarjeta h1 {
+  font-family: 'Baloo 2', sans-serif;
+  color: #FBF7EC;
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+
+.tarjeta p {
+  color: #A79ED6;
+  font-size: 14px;
+  margin: 0 0 22px;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #3A3564;
+  background: #14112B;
+  color: #FBF7EC;
+  font-size: 15px;
+  margin-bottom: 14px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #FFD23F;
+}
+
+.error {
+  color: #FF8A8D;
+  font-size: 13px;
+  margin: -6px 0 14px;
+}
+
+button {
+  width: 100%;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  background: #FFD23F;
+  color: #14112B;
+  box-shadow: 0 5px 0 #C9A11E;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+button:active {
+  transform: translateY(2px);
+}
