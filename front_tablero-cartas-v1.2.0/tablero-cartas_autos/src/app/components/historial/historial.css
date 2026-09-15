@@ -1,0 +1,107 @@
+.acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.accion-btn {
+  background: #FFD23F;
+  border: none;
+  border-radius: 8px;
+  color: #14112B;
+  font-weight: 700;
+  padding: 7px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.borrar-btn {
+  background: transparent;
+  border: 1px solid #D1393B;
+  color: #F2B9BA;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vacio {
+  color: #7A75A0;
+  font-size: 13px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.partida {
+  background: #14112B;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.partida-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.partida-numero {
+  font-family: 'Baloo 2', sans-serif;
+  color: #FBF7EC;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.partida-fecha {
+  color: #7A75A0;
+  font-size: 11px;
+}
+
+.partida-detalle {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: #A79ED6;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.partida-detalle strong {
+  color: #FFD23F;
+}
+
+.sin-ganadores {
+  color: #7A75A0;
+  font-size: 12px;
+  margin: 0;
+}
+
+.ganadores {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ganador-fila {
+  display: flex;
+  justify-content: space-between;
+  color: #FBF7EC;
+  font-size: 13px;
+  padding: 3px 0;
+}
+
+.ganador-fila strong {
+  color: #4FA83D;
+}
+

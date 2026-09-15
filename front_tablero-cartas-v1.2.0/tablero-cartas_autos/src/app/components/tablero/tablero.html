@@ -1,0 +1,210 @@
+<div class="mesa">
+  <div class="topbar">
+    <span class="version-tag">v{{ version }}</span>
+    <button class="cerrar-sesion-btn" (click)="cerrarSesion()" title="Cerrar sesión">
+      {{ sesion.nombreUsuario() }} · Salir
+    </button>
+  </div>
+
+  @if (ganadorMostrado(); as ganador) {
+    <div class="banner-ganador" [style.background]="ganador.color">
+      🏆 ¡{{ ganador.nombre }} llegó primero a la meta!
+    </div>
+  }
+
+  <div class="cancha">
+    <aside class="panel-lateral">
+      <div class="botones-widget">
+        <button
+          class="boton chico inscripciones"
+          [disabled]="servicio.carreraEnCurso() || servicio.demoActivo()"
+          (click)="abrirInscripciones()"
+        >
+          📋 Registro
+        </button>
+
+        @if (servicio.bloqueado()) {
+          @if (!servicio.mazoVacio()) {
+            <!-- Mientras la carrera está en curso NUNCA se muestra "Reiniciar" (ver más abajo, solo aparece cuando termina). -->
+            <button class="boton chico principal" (click)="cantarCarta()" [disabled]="modoAutomatico()">
+              Modo Manual
+            </button>
+
+            @if (modoAutomatico()) {
+              <button class="boton chico automatico-activo" (click)="alternarAutomatico()">Detener automático</button>
+            } @else if (eligiendoVelocidadReal()) {
+              <div class="fila-velocidades">
+                @for (v of velocidades; track v) {
+                  <button class="boton chico principal" (click)="elegirVelocidadReal(v)">{{ v / 1000 }}s</button>
+                }
+              </div>
+              <button class="boton chico secundario" (click)="eligiendoVelocidadReal.set(false)">✕ Cancelar</button>
+            } @else {
+              <button class="boton chico secundario" (click)="alternarAutomatico()">Modo automático</button>
+            }
+          } @else {
+            <button class="boton chico secundario" (click)="reiniciar()">Reiniciar</button>
+          }
+        }
+
+        <!-- Demo "🧪 Pruebas": carrera de mentira, solo para enseñar cómo funciona. -->
+        @if (!servicio.demoActivo()) {
+          @if (panelPruebas() === 'inactivo') {
+            <button
+              class="boton chico pruebas"
+              [disabled]="servicio.bloqueado() && !servicio.mazoVacio()"
+              (click)="abrirPruebas()"
+            >
+              🧪 Pruebas
+            </button>
+          } @else if (panelPruebas() === 'eligiendo-modo') {
+            <button class="boton chico principal" (click)="elegirManualDemo()">🖐️ Manual</button>
+            <button class="boton chico principal" (click)="irAVelocidadesDemo()">⚡ Automático</button>
+            <button class="boton chico secundario" (click)="cancelarPruebas()">✕ Cancelar</button>
+          } @else if (panelPruebas() === 'eligiendo-velocidad') {
+            <div class="fila-velocidades">
+              @for (v of velocidades; track v) {
+                <button class="boton chico principal" (click)="elegirVelocidadDemo(v)">{{ v / 1000 }}s</button>
+              }
+            </div>
+            <button class="boton chico secundario" (click)="cancelarPruebas()">✕ Cancelar</button>
+          }
+        } @else {
+          @if (servicio.primerGanadorDemo()) {
+            <button class="boton chico automatico-activo" (click)="finalizarDemo()">✅ Listo</button>
+          } @else if (modoDemoAutomatico()) {
+            <button class="boton chico secundario" (click)="detenerAutomaticoDemo()">⏹ Detener automático</button>
+          } @else {
+            <button class="boton chico principal" (click)="cantarCartaDemo()">▶️ Siguiente carta</button>
+          }
+        }
+      </div>
+
+      <div class="espaciador"></div>
+
+      <div class="mazo-widget">
+        <div class="fila-carta">
+          @if (!servicio.demoActivo()) {
+            <button class="flecha" [disabled]="!puedeIrAtras()" (click)="cartaAnterior()" title="Carta anterior">◀</button>
+          }
+
+          <div class="pila-mazo" [class.repaso]="!servicio.demoActivo() && !verEnVivo()">
+            @for (i of dorsosVisiblesMostrados(); track i) {
+              <div class="dorso-mini" [style.transform]="'translate(' + (i + 1) * 6 + 'px, ' + (i + 1) * 6 + 'px)'" [style.z-index]="-i"></div>
+            }
+            <app-carta class="carta-frente" [carta]="cartaMostradaFinal()" />
+          </div>
+
+          @if (!servicio.demoActivo()) {
+            <button class="flecha" [disabled]="!puedeIrAdelante()" (click)="cartaSiguiente()" title="Carta siguiente">▶</button>
+          }
+        </div>
+
+        <p class="restantes">{{ cartasRestantesMostradas() }} cartas restantes</p>
+
+        @if (servicio.demoActivo()) {
+          @if (servicio.historialDemo().length > 0) {
+            <p class="contador-historial">🧪 Carta {{ servicio.historialDemo().length }} de prueba</p>
+          }
+        } @else if (servicio.historial().length > 0) {
+          @if (verEnVivo()) {
+            <p class="contador-historial">Carta {{ indiceMostrado() + 1 }} de {{ servicio.historial().length }}</p>
+          } @else {
+            <button class="volver-vivo" (click)="irALaUltima()">
+              🔴 Carta {{ indiceMostrado() + 1 }} de {{ servicio.historial().length }} — volver a la última
+            </button>
+          }
+        }
+      </div>
+
+      <div class="espaciador"></div>
+
+      @if (servicio.mazoVacio() && servicio.primerGanador(); as ganador) {
+        <div class="resumen-final">
+          @if (servicio.resultadosFinales().length > 0) {
+            <p class="resumen-final-titulo">
+              🏆
+              <app-avatar-dino [especie]="ganador.especie" [color]="ganador.color" [colorClaro]="ganador.colorClaro" [size]="20" />
+              <span [style.color]="ganador.color">{{ ganador.nombre }}</span>
+            </p>
+            <div class="resumen-final-lista">
+              @for (r of servicio.resultadosFinales(); track r.nombre) {
+                <div class="resumen-final-fila">
+                  <span>{{ r.nombre }} ({{ r.celdas }})</span>
+                  <strong>+{{ r.premio }}</strong>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="resumen-final-titulo">
+              🏆
+              <app-avatar-dino [especie]="ganador.especie" [color]="ganador.color" [colorClaro]="ganador.colorClaro" [size]="20" />
+              <span [style.color]="ganador.color">{{ ganador.nombre }}</span>
+            </p>
+            <p class="sin-inscritos">Nadie se inscribió — nada que pagar.</p>
+          }
+        </div>
+      }
+    </aside>
+
+    <div class="arena">
+      <div class="bosque-meta" aria-hidden="true">
+        @for (arbol of arboles; track $index) {
+          <span class="arbol" [style.animation-delay]="$index * 0.35 + 's'">{{ arbol }}</span>
+        }
+      </div>
+
+      <div class="publico publico-izq" aria-hidden="true">
+        @for (fan of publicoIzq(); track $index) {
+          <span class="fan" [style.animation-delay]="$index * 0.28 + 's'">
+            <app-avatar-dino [especie]="fan.especie" [color]="fan.color" [colorClaro]="fan.colorClaro" [size]="26" />
+          </span>
+        }
+      </div>
+
+      <div class="pistas">
+        @for (jugador of jugadoresMostrados(); track jugador.id) {
+          <app-jugador-ficha
+            [jugador]="jugador"
+            [espaciosMeta]="servicio.espaciosMeta"
+            [esGanador]="ganadorMostrado()?.id === jugador.id"
+            (renombrar)="renombrarJugador(jugador.id, $event)"
+          />
+        }
+      </div>
+
+      <div class="publico publico-der" aria-hidden="true">
+        @for (fan of publicoDer(); track $index) {
+          <span class="fan" [style.animation-delay]="$index * 0.28 + 's'">
+            <app-avatar-dino [especie]="fan.especie" [color]="fan.color" [colorClaro]="fan.colorClaro" [size]="26" />
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="fila-toggle-apuestas">
+    <button class="boton-toggle" (click)="mostrarApuestas.set(!mostrarApuestas())" [title]="mostrarApuestas() ? 'Ocultar apuestas' : 'Ver apuestas'">
+      {{ mostrarApuestas() ? '−' : '+' }}
+    </button>
+  </div>
+
+  @if (mostrarApuestas()) {
+    <div class="tabla-apuestas">
+      @for (jugador of servicio.jugadores(); track jugador.id) {
+        <div class="tabla-apuestas-col">
+          <div class="tabla-apuestas-cab">{{ jugador.nombre }}</div>
+          @for (nombre of servicio.celdasPorDino()[jugador.id] ?? []; track $index) {
+            <div class="tabla-apuestas-celda">{{ nombre }}</div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (mostrarInscripciones()) {
+    <app-inscripciones (cerrar)="mostrarInscripciones.set(false)" />
+  }
+
+  <footer class="firma">© 2026 Yujito. Todos los derechos reservados.</footer>
+</div>

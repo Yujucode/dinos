@@ -1,0 +1,215 @@
+<div class="fondo" (click)="cerrar.emit()">
+  <div class="panel" (click)="$event.stopPropagation()">
+    <div class="cabecera-panel">
+      <h2>{{ pestanaActiva() === 'registro' ? '📋 Registro' : '📊 Historial' }}</h2>
+      @if (pestanaActiva() === 'registro') {
+        <div class="valor-config">
+          <span>Valor/puesto</span>
+          @if (editandoValorPuesto()) {
+            <input
+              type="number"
+              class="valor-input"
+              [ngModel]="valorPuestoEdicion()"
+              (ngModelChange)="valorPuestoEdicion.set($event)"
+              (keyup.enter)="guardarValorPuesto()"
+              min="1"
+            />
+            <button class="valor-btn" (click)="guardarValorPuesto()">Guardar</button>
+          } @else {
+            <strong class="valor-actual">{{ servicio.valorPuesto() }}</strong>
+            <button class="valor-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="empezarEdicionValorPuesto()">✏️ Editar</button>
+          }
+        </div>
+      }
+      <button class="cerrar-btn" (click)="cerrar.emit()">✕</button>
+    </div>
+
+    <div class="pestanas">
+      <button
+        class="pestana-btn"
+        [class.activa]="pestanaActiva() === 'registro'"
+        (click)="pestanaActiva.set('registro')"
+      >📋 Registro</button>
+      <button
+        class="pestana-btn"
+        [class.activa]="pestanaActiva() === 'historial'"
+        (click)="pestanaActiva.set('historial')"
+      >📊 Historial</button>
+    </div>
+
+    @if (pestanaActiva() === 'registro') {
+
+    @if (servicio.resultadosFinales().length > 0) {
+      <div class="resultados">
+        <p class="resultados-titulo">
+          🏆 Ganó {{ servicio.primerGanador()?.nombre }} — se sumó a Acumuladas:
+        </p>
+        @for (r of servicio.resultadosFinales(); track r.nombre) {
+          <div class="resultado-fila">
+            <span>{{ r.nombre }} ({{ r.celdas }} puesto{{ r.celdas > 1 ? 's' : '' }})</span>
+            <strong>+{{ r.premio }}</strong>
+          </div>
+        }
+      </div>
+    } @else if (servicio.primerGanador()) {
+      <p class="sin-inscritos">Nadie se inscribió a {{ servicio.primerGanador()?.nombre }} — nada que pagar.</p>
+    }
+
+    <div class="columnas">
+      @for (jugador of servicio.jugadores(); track jugador.id) {
+        <div class="columna" (dragover)="onDragOver($event)" (drop)="onDrop($event, jugador.id)">
+          <div class="columna-cabecera" [style.color]="jugador.color">
+            <app-avatar-dino
+              [especie]="jugador.especie"
+              [color]="jugador.color"
+              [colorClaro]="jugador.colorClaro"
+              [size]="24"
+            />
+            <span>{{ jugador.nombre }}</span>
+          </div>
+
+          <div class="celdas">
+            @for (nombre of nombresDe(jugador.id); track $index) {
+              <div class="celda" [draggable]="!servicio.inscripcionesCongeladas()" (dragstart)="onDragStartCelda($event, nombre)">
+                <span>{{ nombre }}</span>
+                <button class="quitar-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="quitar(jugador.id, $index)">✕</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="fila-jugar">
+      @if (!servicio.bloqueado() && !servicio.mazoVacio()) {
+        <button class="boton-jugar" [disabled]="!servicio.puedeIniciar()" (click)="jugar()">
+          ▶️
+        </button>
+        @if (servicio.motivoNoPuedeIniciar()) {
+          <span class="motivo">{{ servicio.motivoNoPuedeIniciar() }}</span>
+        }
+      }
+      @if (servicio.mazoVacio()) {
+        <button class="boton-jugar" (click)="jugarDeNuevo()">🔁 Reiniciar</button>
+      }
+    </div>
+
+    <div class="dos-columnas">
+      <div class="tarjeta">
+        <div class="tarjeta-cabecera">
+          <span>💰 Acumuladas</span>
+          <div class="acciones-tarjeta">
+            <button class="ocultar-btn" (click)="ocultarGanancias.set(!ocultarGanancias())">
+              {{ ocultarGanancias() ? '👁️ Mostrar' : '🙈 Ocultar' }}
+            </button>
+            <button class="borrar-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="borrarTodoConfirmando()">🗑️ Borrar todo</button>
+          </div>
+        </div>
+
+        @if (!ocultarGanancias()) {
+          @if (servicio.resumenGanancias().length === 0) {
+            <p class="vacio">Todavía nadie ha ganado puntos.</p>
+          } @else {
+            <div class="lista">
+              @for (g of servicio.resumenGanancias(); track g.nombre) {
+                <div class="fila ganancia">
+                  @if (editandoUpd() === g.nombre) {
+                    <input
+                      type="text"
+                      class="edicion-input"
+                      [ngModel]="nombreUpdEdicion()"
+                      (ngModelChange)="nombreUpdEdicion.set($event)"
+                    />
+                    <input
+                      type="number"
+                      class="edicion-input"
+                      [ngModel]="montoUpdEdicion()"
+                      (ngModelChange)="montoUpdEdicion.set($event)"
+                      (keyup.enter)="guardarUpd(g.nombre)"
+                    />
+                    <button class="guardar-btn" (click)="guardarUpd(g.nombre)">Guardar</button>
+                  } @else if (editandoGanancia() === g.nombre) {
+                    <input
+                      type="number"
+                      class="edicion-input"
+                      placeholder="+/-"
+                      [ngModel]="valorEdicion()"
+                      (ngModelChange)="valorEdicion.set($event)"
+                      (keyup.enter)="guardarSuma(g.nombre)"
+                    />
+                    <button class="guardar-btn" (click)="guardarSuma(g.nombre)">Guardar</button>
+                  } @else {
+                    <span
+                      class="nombre-arrastrable"
+                      [draggable]="!servicio.inscripcionesCongeladas()"
+                      (dragstart)="onDragStartGanancia($event, g.nombre)"
+                    >{{ g.nombre }}</span>
+                    <strong [class.negativo]="g.puntos < 0">{{ g.puntos }}</strong>
+                    <button class="editar-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="empezarSuma(g.nombre)">sumar</button>
+                    <button class="editar-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="empezarUpd(g.nombre, g.puntos)">Upd</button>
+                    <button class="eliminar-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="eliminarGanancia(g.nombre)">eliminar</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <div class="agregar-ganancia-fila">
+            <input
+              type="text"
+              placeholder="Nombre"
+              [ngModel]="nombreNuevoAcumulado()"
+              (ngModelChange)="nombreNuevoAcumulado.set($event)"
+              (keyup.enter)="agregarAcumulado()"
+              [disabled]="servicio.inscripcionesCongeladas()"
+            />
+            <input
+              type="number"
+              class="monto-input"
+              placeholder="Monto"
+              [ngModel]="montoNuevoAcumulado()"
+              (ngModelChange)="montoNuevoAcumulado.set($event)"
+              (keyup.enter)="agregarAcumulado()"
+              min="1"
+              [disabled]="servicio.inscripcionesCongeladas()"
+            />
+            <button (click)="agregarAcumulado()" title="Agregar saldo" [disabled]="servicio.inscripcionesCongeladas()">+</button>
+          </div>
+        }
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-cabecera">
+          <span>👥 Participantes — {{ servicio.resumenParticipantes().length }}</span>
+          <div class="acciones-tarjeta">
+            <button class="ocultar-btn" (click)="ocultarParticipantes.set(!ocultarParticipantes())">
+              {{ ocultarParticipantes() ? '👁️ Mostrar' : '🙈 Ocultar' }}
+            </button>
+            <button class="borrar-btn" [disabled]="servicio.inscripcionesCongeladas()" (click)="servicio.borrarParticipantes()">🗑️ Borrar participantes</button>
+          </div>
+        </div>
+
+        @if (!ocultarParticipantes()) {
+          @if (servicio.resumenParticipantes().length === 0) {
+            <p class="vacio">Todavía no hay nadie inscrito en esta carrera.</p>
+          } @else {
+            <div class="lista">
+              @for (p of servicio.resumenParticipantes(); track p.nombre) {
+                <div class="fila">
+                  <span>{{ p.nombre }}</span>
+                  <span class="detalle">{{ p.puestos }} puesto{{ p.puestos > 1 ? 's' : '' }}</span>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    } @else {
+
+    <app-historial />
+
+    }
+  </div>
+</div>

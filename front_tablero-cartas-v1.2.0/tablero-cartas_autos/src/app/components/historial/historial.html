@@ -1,0 +1,36 @@
+<div class="acciones">
+  <button class="accion-btn" (click)="descargarTxt()">📥 Descargar .txt</button>
+  <button class="borrar-btn" (click)="borrarConfirmando()">🗑️ Borrar historial</button>
+</div>
+
+@if (partidasNumeradas().length === 0) {
+  <p class="vacio">Todavía no se jugó ninguna partida.</p>
+} @else {
+  <div class="lista">
+    @for (p of partidasNumeradas(); track p.numero) {
+      <div class="partida">
+        <div class="partida-cabecera">
+          <span class="partida-numero">Partida #{{ p.numero }}</span>
+          <span class="partida-fecha">{{ formatearFecha(p.fecha) }}</span>
+        </div>
+        <div class="partida-detalle">
+          <span>🏆 <strong>{{ p.dinoGanador }}</strong></span>
+          <span>{{ p.filasJugadas }} fila{{ p.filasJugadas !== 1 ? 's' : '' }} jugada{{ p.filasJugadas !== 1 ? 's' : '' }}</span>
+          <span>Valor/puesto {{ p.valorPuesto }} × premio {{ p.premioPorCelda }}</span>
+        </div>
+        @if (p.ganadores.length === 0) {
+          <p class="sin-ganadores">Nadie se inscribió al dino ganador — nada que pagar.</p>
+        } @else {
+          <div class="ganadores">
+            @for (g of p.ganadores; track g.nombre) {
+              <div class="ganador-fila">
+                <span>{{ g.nombre }} ({{ g.celdas }})</span>
+                <strong>+{{ g.premio }}</strong>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

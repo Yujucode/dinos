@@ -1,0 +1,3 @@
+// Se actualiza cada vez que se entrega una nueva versión del proyecto.
+export const VERSION = '1.16.0';
+export const VERSION_NOTA = 'Cuatro cambios: 1) El boton "Reiniciar" ya no aparece en plena carrera, solo cuando termina. 2) El modo automatico de la carrera real ahora tambien pide elegir velocidad (2s/1s/0.7s/0.5s), igual que en Pruebas. 3) El boton "Historial" se saco del panel lateral: ahora es una pestaña al costado de "Registro" dentro del mismo modal. 4) Al cambiar el Valor/puesto con inscripciones activas, primero se limpia la tabla (devolviendo a cada uno lo descontado, calculado con el valor VIEJO) y recien despues se guarda el numero nuevo.';
