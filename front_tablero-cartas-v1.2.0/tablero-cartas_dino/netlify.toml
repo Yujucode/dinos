@@ -1,0 +1,30 @@
+# Configuración de despliegue en Netlify para RaceDinos.
+# - "publish" apunta a la carpeta que genera `ng build` con el builder nuevo
+#   de Angular (@angular/build:application): dist/<proyecto>/browser.
+#   Si al hacer `npm run build` localmente la carpeta resulta distinta,
+#   ajustar esta ruta antes de conectar el sitio en Netlify.
+# - Las funciones (netlify/functions/*.js) quedan disponibles en
+#   /.netlify/functions/<nombre>, pero se exponen además como /api/<nombre>
+#   gracias al redirect de abajo, para URLs más cortas.
+# - El último redirect ("/* -> /index.html") es el fallback típico de una
+#   SPA de Angular con rutas del lado del cliente; no afecta a /panel ni a
+#   /api porque Netlify sirve primero cualquier archivo o función real que
+#   exista antes de aplicar los redirects.
+
+[build]
+  command = "npm run build"
+  publish = "dist/tablero-cartas/browser"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

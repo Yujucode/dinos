@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RaceDinos — Panel de conteos</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --fondo: #14112b;
+        --panel: #1f1b3f;
+        --borde: #3a3564;
+        --texto: #fbf7ec;
+        --texto-tenue: #a79ed6;
+        --tenue2: #7a75a0;
+        --acento: #ffd23f;
+        --verde: #4fa83d;
+        --rojo: #d1393b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--fondo);
+        color: var(--texto);
+        font-family: 'Nunito', sans-serif;
+        display: flex;
+        justify-content: center;
+        padding: 24px 16px;
+      }
+      .envoltorio {
+        width: 100%;
+        max-width: 720px;
+      }
+      h1 {
+        font-family: 'Baloo 2', sans-serif;
+        font-size: clamp(22px, 5vw, 30px);
+        margin: 0 0 4px;
+      }
+      .subtitulo {
+        color: var(--texto-tenue);
+        font-size: 13px;
+        margin: 0 0 20px;
+      }
+
+      .tarjeta {
+        background: var(--panel);
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .fila-login {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      input[type='password'] {
+        flex: 1;
+        min-width: 180px;
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: var(--texto);
+        font-size: 14px;
+        font-family: 'Nunito', sans-serif;
+      }
+      input[type='password']:focus {
+        outline: 2px solid var(--acento);
+      }
+
+      button {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .btn-principal {
+        background: var(--acento);
+        color: var(--fondo);
+      }
+      .btn-principal:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .btn-secundario {
+        background: transparent;
+        border: 1px solid var(--borde);
+        color: var(--texto-tenue);
+      }
+
+      .mensaje-error {
+        color: var(--rojo);
+        font-size: 13px;
+        margin-top: 10px;
+      }
+
+      .cabecera-datos {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+      .estado-auto {
+        color: var(--tenue2);
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .lista-streamers {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .streamer {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .streamer-cabecera {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .streamer-nombre {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .streamer-total {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 800;
+        font-size: 20px;
+        color: var(--acento);
+      }
+      .streamer-total span {
+        font-size: 11px;
+        color: var(--tenue2);
+        font-weight: 600;
+        margin-left: 4px;
+      }
+      .streamer-fechas {
+        color: var(--tenue2);
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .streamer-recientes {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .streamer-recientes summary {
+        color: var(--texto-tenue);
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .reciente-fila {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--texto-tenue);
+        padding: 3px 0;
+        border-top: 1px solid var(--borde);
+      }
+      .reciente-fila strong {
+        color: var(--verde);
+      }
+
+      .vacio {
+        color: var(--tenue2);
+        font-size: 13px;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .oculto {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="envoltorio">
+      <h1>🏁 Panel de conteos — RaceDinos</h1>
+      <p class="subtitulo">
+        Cuántas partidas jugó cada instancia alquilada, sin necesitar ver su pantalla.
+      </p>
+
+      <div class="tarjeta" id="tarjeta-login">
+        <div class="fila-login">
+          <input
+            type="password"
+            id="input-password"
+            placeholder="Contraseña del panel"
+            autocomplete="off"
+          />
+          <button class="btn-principal" id="btn-entrar">Entrar</button>
+        </div>
+        <p class="mensaje-error oculto" id="mensaje-error"></p>
+      </div>
+
+      <div class="tarjeta oculto" id="tarjeta-datos">
+        <div class="cabecera-datos">
+          <button class="btn-secundario" id="btn-refrescar">🔄 Refrescar</button>
+          <div class="estado-auto">
+            <label><input type="checkbox" id="chk-auto" checked /> Auto-refrescar cada 20s</label>
+            <button class="btn-secundario" id="btn-salir">Salir</button>
+          </div>
+        </div>
+        <div id="contenido-streamers"></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var passwordActual = '';
+        var intervaloAuto = null;
+
+        var tarjetaLogin = document.getElementById('tarjeta-login');
+        var tarjetaDatos = document.getElementById('tarjeta-datos');
+        var inputPassword = document.getElementById('input-password');
+        var btnEntrar = document.getElementById('btn-entrar');
+        var mensajeError = document.getElementById('mensaje-error');
+        var btnRefrescar = document.getElementById('btn-refrescar');
+        var btnSalir = document.getElementById('btn-salir');
+        var chkAuto = document.getElementById('chk-auto');
+        var contenido = document.getElementById('contenido-streamers');
+
+        function formatearFecha(iso) {
+          if (!iso) return '—';
+          try {
+            return new Date(iso).toLocaleString('es-PE', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+          } catch (e) {
+            return iso;
+          }
+        }
+
+        function mostrarError(msg) {
+          mensajeError.textContent = msg;
+          mensajeError.classList.remove('oculto');
+        }
+
+        function limpiarError() {
+          mensajeError.classList.add('oculto');
+          mensajeError.textContent = '';
+        }
+
+        function renderizar(streamers) {
+          if (!streamers || streamers.length === 0) {
+            contenido.innerHTML = '<p class="vacio">Todavía no se registró ninguna partida.</p>';
+            return;
+          }
+          var html = '<div class="lista-streamers">';
+          streamers.forEach(function (s) {
+            html += '<div class="streamer">';
+            html += '<div class="streamer-cabecera">';
+            html += '<span class="streamer-nombre">' + escaparHtml(s.nombre) + '</span>';
+            html +=
+              '<span class="streamer-total">' + s.totalPartidas + '<span> partidas</span></span>';
+            html += '</div>';
+            html +=
+              '<div class="streamer-fechas">Primera: ' +
+              formatearFecha(s.primeraPartida) +
+              ' · Última: ' +
+              formatearFecha(s.ultimaPartida) +
+              '</div>';
+            if (s.recientes && s.recientes.length > 0) {
+              html +=
+                '<details class="streamer-recientes"><summary>Ver últimas ' +
+                s.recientes.length +
+                '</summary>';
+              s.recientes.forEach(function (r) {
+                html +=
+                  '<div class="reciente-fila"><span>' +
+                  formatearFecha(r.fecha) +
+                  '</span><span>🏆 <strong>' +
+                  escaparHtml(r.dinoGanador) +
+                  '</strong> · ' +
+                  r.filasJugadas +
+                  ' filas</span></div>';
+              });
+              html += '</details>';
+            }
+            html += '</div>';
+          });
+          html += '</div>';
+          contenido.innerHTML = html;
+        }
+
+        function escaparHtml(texto) {
+          var div = document.createElement('div');
+          div.textContent = texto == null ? '' : String(texto);
+          return div.innerHTML;
+        }
+
+        function cargarConteos() {
+          return fetch('/api/ver-conteos', {
+            headers: { 'x-panel-password': passwordActual },
+          })
+            .then(function (res) {
+              return res.json().then(function (datos) {
+                if (!res.ok) throw new Error(datos.error || 'Error desconocido');
+                return datos;
+              });
+            })
+            .then(function (datos) {
+              renderizar(datos.streamers);
+            })
+            .catch(function (err) {
+              contenido.innerHTML = '<p class="mensaje-error">' + escaparHtml(err.message) + '</p>';
+            });
+        }
+
+        function entrar() {
+          var pass = inputPassword.value;
+          if (!pass) return;
+          limpiarError();
+          btnEntrar.disabled = true;
+          fetch('/api/ver-conteos', { headers: { 'x-panel-password': pass } })
+            .then(function (res) {
+              return res.json().then(function (datos) {
+                if (!res.ok) throw new Error(datos.error || 'Contraseña incorrecta');
+                return datos;
+              });
+            })
+            .then(function (datos) {
+              passwordActual = pass;
+              try {
+                sessionStorage.setItem('racedinos-panel-pass', pass);
+              } catch (e) {}
+              tarjetaLogin.classList.add('oculto');
+              tarjetaDatos.classList.remove('oculto');
+              renderizar(datos.streamers);
+              reiniciarAuto();
+            })
+            .catch(function (err) {
+              mostrarError(err.message);
+            })
+            .finally(function () {
+              btnEntrar.disabled = false;
+            });
+        }
+
+        function salir() {
+          passwordActual = '';
+          try {
+            sessionStorage.removeItem('racedinos-panel-pass');
+          } catch (e) {}
+          clearInterval(intervaloAuto);
+          tarjetaDatos.classList.add('oculto');
+          tarjetaLogin.classList.remove('oculto');
+          inputPassword.value = '';
+        }
+
+        function reiniciarAuto() {
+          clearInterval(intervaloAuto);
+          if (chkAuto.checked) {
+            intervaloAuto = setInterval(cargarConteos, 20000);
+          }
+        }
+
+        btnEntrar.addEventListener('click', entrar);
+        inputPassword.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') entrar();
+        });
+        btnRefrescar.addEventListener('click', cargarConteos);
+        btnSalir.addEventListener('click', salir);
+        chkAuto.addEventListener('change', reiniciarAuto);
+
+        // Conveniencia: si ya había una contraseña guardada en esta pestaña, se reintenta sola.
+        try {
+          var guardada = sessionStorage.getItem('racedinos-panel-pass');
+          if (guardada) {
+            inputPassword.value = guardada;
+            entrar();
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </body>
+</html>
