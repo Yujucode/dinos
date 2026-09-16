@@ -9,6 +9,7 @@
       [ngModel]="usuario()"
       (ngModelChange)="usuario.set($event)"
       (keyup.enter)="onIngresar()"
+      [disabled]="validando()"
     />
 
     <input
@@ -17,12 +18,15 @@
       [ngModel]="contrasena()"
       (ngModelChange)="contrasena.set($event)"
       (keyup.enter)="onIngresar()"
+      [disabled]="validando()"
     />
 
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
 
-    <button (click)="onIngresar()">Entrar a la mesa</button>
+    <button (click)="onIngresar()" [disabled]="validando()">
+      {{ validando() ? 'Verificando...' : 'Entrar a la mesa' }}
+    </button>
   </div>
 </div>

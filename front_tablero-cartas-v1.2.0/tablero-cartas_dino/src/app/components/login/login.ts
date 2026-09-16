@@ -15,13 +15,16 @@ export class Login {
   usuario = signal('');
   contrasena = signal('');
   error = signal('');
+  validando = signal(false);
 
   constructor(
     private readonly sesion: SesionService,
     private readonly router: Router
   ) {}
 
-  onIngresar(): void {
+  async onIngresar(): Promise<void> {
+    if (this.validando()) return;
+
     const usuario = this.usuario().trim();
     const contrasena = this.contrasena();
 
@@ -30,11 +33,28 @@ export class Login {
       return;
     }
 
-    // TODO: cuando exista el backend, aquí se llama al endpoint
-    // /auth/login (ASP.NET Core Web API) con { usuario, contrasena },
-    // se guarda el JWT recibido, y recién ahí se inicia sesión.
     this.error.set('');
-    this.sesion.iniciarSesion(usuario);
-    this.router.navigateByUrl('/juego');
+    this.validando.set(true);
+
+    try {
+      const respuesta = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario, contrasena }),
+      });
+      const datos = await respuesta.json().catch(() => ({}));
+
+      if (!respuesta.ok) {
+        this.error.set(datos.error || 'Usuario o contraseña incorrectos');
+        return;
+      }
+
+      this.sesion.iniciarSesion(usuario);
+      this.router.navigateByUrl('/juego');
+    } catch {
+      this.error.set('No se pudo verificar el acceso — revisa tu conexión e intenta de nuevo');
+    } finally {
+      this.validando.set(false);
+    }
   }
 }

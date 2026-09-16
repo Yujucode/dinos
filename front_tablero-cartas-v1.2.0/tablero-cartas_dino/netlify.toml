@@ -19,6 +19,12 @@
 [functions]
   node_bundler = "esbuild"
 
+# Corre generar-clave.js todos los días a las 08:00 UTC (3:00am hora de Perú)
+# para regenerar sola la clave de acceso al juego. El usuario NO rota (es la
+# variable de entorno GAME_USERNAME), solo la clave.
+[functions."generar-clave"]
+  schedule = "0 8 * * *"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

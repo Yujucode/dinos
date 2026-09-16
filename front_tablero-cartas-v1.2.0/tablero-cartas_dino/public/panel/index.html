@@ -195,6 +195,48 @@
       .oculto {
         display: none;
       }
+
+      .credenciales-titulo {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        margin: 0 0 10px;
+      }
+      .credenciales-fila {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+      }
+      .credenciales-etiqueta {
+        color: var(--tenue2);
+        font-size: 12px;
+        min-width: 70px;
+      }
+      .credenciales-valor {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--acento);
+        letter-spacing: 1px;
+        flex: 1;
+      }
+      .credenciales-copiar {
+        background: transparent;
+        border: 1px solid var(--borde);
+        color: var(--texto-tenue);
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+      .credenciales-nota {
+        color: var(--tenue2);
+        font-size: 11px;
+        margin: 4px 0 0;
+      }
     </style>
   </head>
   <body>
@@ -217,6 +259,14 @@
         <p class="mensaje-error oculto" id="mensaje-error"></p>
       </div>
 
+      <div class="tarjeta oculto" id="tarjeta-credenciales" style="margin-bottom: 14px">
+        <p class="credenciales-titulo">🔑 Usuario y clave de hoy (para entrar al juego)</p>
+        <div id="contenido-credenciales"></div>
+        <p class="credenciales-nota">
+          La clave cambia sola todos los días a las 3:00am (hora de Perú). El usuario no cambia.
+        </p>
+      </div>
+
       <div class="tarjeta oculto" id="tarjeta-datos">
         <div class="cabecera-datos">
           <button class="btn-secundario" id="btn-refrescar">🔄 Refrescar</button>
@@ -236,6 +286,7 @@
 
         var tarjetaLogin = document.getElementById('tarjeta-login');
         var tarjetaDatos = document.getElementById('tarjeta-datos');
+        var tarjetaCredenciales = document.getElementById('tarjeta-credenciales');
         var inputPassword = document.getElementById('input-password');
         var btnEntrar = document.getElementById('btn-entrar');
         var mensajeError = document.getElementById('mensaje-error');
@@ -243,6 +294,7 @@
         var btnSalir = document.getElementById('btn-salir');
         var chkAuto = document.getElementById('chk-auto');
         var contenido = document.getElementById('contenido-streamers');
+        var contenidoCredenciales = document.getElementById('contenido-credenciales');
 
         function formatearFecha(iso) {
           if (!iso) return '—';
@@ -335,6 +387,56 @@
             });
         }
 
+        function renderizarCredenciales(datos) {
+          var usuario = datos.usuario || '(no configurado — falta GAME_USERNAME)';
+          var html = '';
+          html +=
+            '<div class="credenciales-fila"><span class="credenciales-etiqueta">Usuario</span><span class="credenciales-valor">' +
+            escaparHtml(usuario) +
+            '</span></div>';
+          html +=
+            '<div class="credenciales-fila"><span class="credenciales-etiqueta">Clave hoy</span><span class="credenciales-valor">' +
+            escaparHtml(datos.clave) +
+            '</span><button class="credenciales-copiar" id="btn-copiar-clave">Copiar</button></div>';
+          contenidoCredenciales.innerHTML = html;
+          var btnCopiar = document.getElementById('btn-copiar-clave');
+          if (btnCopiar) {
+            btnCopiar.addEventListener('click', function () {
+              try {
+                navigator.clipboard.writeText(datos.clave);
+                btnCopiar.textContent = '¡Copiado!';
+                setTimeout(function () {
+                  btnCopiar.textContent = 'Copiar';
+                }, 1500);
+              } catch (e) {}
+            });
+          }
+        }
+
+        function cargarCredenciales() {
+          return fetch('/api/ver-credenciales', {
+            headers: { 'x-panel-password': passwordActual },
+          })
+            .then(function (res) {
+              return res.json().then(function (datos) {
+                if (!res.ok) throw new Error(datos.error || 'Error desconocido');
+                return datos;
+              });
+            })
+            .then(function (datos) {
+              renderizarCredenciales(datos);
+            })
+            .catch(function (err) {
+              contenidoCredenciales.innerHTML =
+                '<p class="mensaje-error">' + escaparHtml(err.message) + '</p>';
+            });
+        }
+
+        function refrescarTodo() {
+          cargarConteos();
+          cargarCredenciales();
+        }
+
         function entrar() {
           var pass = inputPassword.value;
           if (!pass) return;
@@ -353,8 +455,10 @@
                 sessionStorage.setItem('racedinos-panel-pass', pass);
               } catch (e) {}
               tarjetaLogin.classList.add('oculto');
+              tarjetaCredenciales.classList.remove('oculto');
               tarjetaDatos.classList.remove('oculto');
               renderizar(datos.streamers);
+              cargarCredenciales();
               reiniciarAuto();
             })
             .catch(function (err) {
@@ -372,6 +476,7 @@
           } catch (e) {}
           clearInterval(intervaloAuto);
           tarjetaDatos.classList.add('oculto');
+          tarjetaCredenciales.classList.add('oculto');
           tarjetaLogin.classList.remove('oculto');
           inputPassword.value = '';
         }
@@ -379,7 +484,7 @@
         function reiniciarAuto() {
           clearInterval(intervaloAuto);
           if (chkAuto.checked) {
-            intervaloAuto = setInterval(cargarConteos, 20000);
+            intervaloAuto = setInterval(refrescarTodo, 20000);
           }
         }
 
@@ -387,7 +492,7 @@
         inputPassword.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') entrar();
         });
-        btnRefrescar.addEventListener('click', cargarConteos);
+        btnRefrescar.addEventListener('click', refrescarTodo);
         btnSalir.addEventListener('click', salir);
         chkAuto.addEventListener('change', reiniciarAuto);
 
