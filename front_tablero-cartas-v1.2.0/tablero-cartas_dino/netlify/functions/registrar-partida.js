@@ -10,7 +10,7 @@
 // (Roberto) es quien reparte los nombres a cada streamer, así que en la práctica
 // no se pisan.
 
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 
 const MAX_RECIENTES = 15;
 
@@ -28,6 +28,11 @@ function respuesta(body, statusCode) {
 }
 
 exports.handler = async (event) => {
+  // Necesario para que Netlify Blobs sepa en qué sitio/deploy está corriendo
+  // cuando la función usa el formato clásico "exports.handler" (compatible
+  // con AWS Lambda) — sin esto, getStore() falla con MissingBlobsEnvironmentError.
+  connectLambda(event);
+
   if (event.httpMethod === 'OPTIONS') {
     return respuesta({}, 204);
   }
