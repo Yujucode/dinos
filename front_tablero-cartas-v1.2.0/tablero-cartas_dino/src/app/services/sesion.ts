@@ -20,6 +20,11 @@ export class SesionService {
   readonly nombreUsuario = signal<string | null>(cargarSesionGuardada());
   readonly estaLogueado = computed(() => this.nombreUsuario() !== null);
 
+  /** Se pone en true cuando la sesión se cierra sola por una suspensión de
+   *  acceso desde el panel (ver App/verificarAcceso). El login la lee una
+   *  vez para mostrar el aviso y la vuelve a apagar. */
+  readonly suspendido = signal(false);
+
   constructor() {
     effect(() => {
       const nombre = this.nombreUsuario();
@@ -43,5 +48,12 @@ export class SesionService {
 
   cerrarSesion(): void {
     this.nombreUsuario.set(null);
+  }
+
+  /** Cierra la sesión porque el acceso fue suspendido desde el panel
+   *  mientras ya se había entrado (no por decisión del usuario). */
+  forzarSalidaPorSuspension(): void {
+    this.suspendido.set(true);
+    this.cerrarSesion();
   }
 }

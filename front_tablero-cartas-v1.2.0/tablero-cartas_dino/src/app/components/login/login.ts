@@ -20,7 +20,12 @@ export class Login {
   constructor(
     private readonly sesion: SesionService,
     private readonly router: Router
-  ) {}
+  ) {
+    if (this.sesion.suspendido()) {
+      this.error.set('Tu acceso fue suspendido — inténtalo de nuevo más tarde.');
+      this.sesion.suspendido.set(false);
+    }
+  }
 
   async onIngresar(): Promise<void> {
     if (this.validando()) return;

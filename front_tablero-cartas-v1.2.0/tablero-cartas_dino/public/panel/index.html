@@ -237,6 +237,32 @@
         font-size: 11px;
         margin: 4px 0 0;
       }
+
+      .suspension-fila {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+      .suspension-estado {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .suspension-estado.activo {
+        color: var(--verde);
+      }
+      .suspension-estado.suspendido {
+        color: var(--rojo);
+      }
+      .btn-peligro {
+        background: var(--rojo);
+        color: var(--texto);
+      }
     </style>
   </head>
   <body>
@@ -267,6 +293,18 @@
         </p>
       </div>
 
+      <div class="tarjeta oculto" id="tarjeta-suspension" style="margin-bottom: 14px">
+        <p class="credenciales-titulo">🚦 Acceso al juego</p>
+        <div class="suspension-fila">
+          <span class="suspension-estado" id="suspension-estado">Cargando…</span>
+          <button class="btn-secundario" id="btn-suspension" disabled>…</button>
+        </div>
+        <p class="credenciales-nota">
+          Mientras está suspendido, nadie entra con usuario y clave, y a quien ya estaba jugando se
+          le corta solo en unos segundos.
+        </p>
+      </div>
+
       <div class="tarjeta oculto" id="tarjeta-datos">
         <div class="cabecera-datos">
           <button class="btn-secundario" id="btn-refrescar">🔄 Refrescar</button>
@@ -287,6 +325,7 @@
         var tarjetaLogin = document.getElementById('tarjeta-login');
         var tarjetaDatos = document.getElementById('tarjeta-datos');
         var tarjetaCredenciales = document.getElementById('tarjeta-credenciales');
+        var tarjetaSuspension = document.getElementById('tarjeta-suspension');
         var inputPassword = document.getElementById('input-password');
         var btnEntrar = document.getElementById('btn-entrar');
         var mensajeError = document.getElementById('mensaje-error');
@@ -295,6 +334,9 @@
         var chkAuto = document.getElementById('chk-auto');
         var contenido = document.getElementById('contenido-streamers');
         var contenidoCredenciales = document.getElementById('contenido-credenciales');
+        var suspensionEstado = document.getElementById('suspension-estado');
+        var btnSuspension = document.getElementById('btn-suspension');
+        var suspendidoActual = false;
 
         function formatearFecha(iso) {
           if (!iso) return '—';
@@ -432,9 +474,53 @@
             });
         }
 
+        function renderizarSuspension(suspendido) {
+          suspendidoActual = suspendido;
+          suspensionEstado.textContent = suspendido ? '🔴 Suspendido' : '🟢 Activo';
+          suspensionEstado.className =
+            'suspension-estado ' + (suspendido ? 'suspendido' : 'activo');
+          btnSuspension.textContent = suspendido ? 'Reactivar acceso' : 'Suspender acceso';
+          btnSuspension.className = suspendido ? 'btn-principal' : 'btn-secundario btn-peligro';
+          btnSuspension.disabled = false;
+        }
+
+        function cargarSuspension() {
+          return fetch('/api/estado-acceso')
+            .then(function (res) {
+              return res.json();
+            })
+            .then(function (datos) {
+              renderizarSuspension(datos.suspendido === true);
+            })
+            .catch(function () {});
+        }
+
+        function alternarSuspension() {
+          btnSuspension.disabled = true;
+          fetch('/api/panel-suspender', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-panel-password': passwordActual },
+            body: JSON.stringify({ suspendido: !suspendidoActual }),
+          })
+            .then(function (res) {
+              return res.json().then(function (datos) {
+                if (!res.ok) throw new Error(datos.error || 'Error desconocido');
+                return datos;
+              });
+            })
+            .then(function (datos) {
+              renderizarSuspension(datos.suspendido);
+            })
+            .catch(function (err) {
+              btnSuspension.disabled = false;
+              alert(err.message);
+            });
+        }
+
         function refrescarTodo() {
           cargarConteos();
           cargarCredenciales();
+          cargarSuspension();
         }
 
         function entrar() {
@@ -456,9 +542,11 @@
               } catch (e) {}
               tarjetaLogin.classList.add('oculto');
               tarjetaCredenciales.classList.remove('oculto');
+              tarjetaSuspension.classList.remove('oculto');
               tarjetaDatos.classList.remove('oculto');
               renderizar(datos.streamers);
               cargarCredenciales();
+              cargarSuspension();
               reiniciarAuto();
             })
             .catch(function (err) {
@@ -477,6 +565,7 @@
           clearInterval(intervaloAuto);
           tarjetaDatos.classList.add('oculto');
           tarjetaCredenciales.classList.add('oculto');
+          tarjetaSuspension.classList.add('oculto');
           tarjetaLogin.classList.remove('oculto');
           inputPassword.value = '';
         }
@@ -495,6 +584,7 @@
         btnRefrescar.addEventListener('click', refrescarTodo);
         btnSalir.addEventListener('click', salir);
         chkAuto.addEventListener('change', reiniciarAuto);
+        btnSuspension.addEventListener('click', alternarSuspension);
 
         // Conveniencia: si ya había una contraseña guardada en esta pestaña, se reintenta sola.
         try {

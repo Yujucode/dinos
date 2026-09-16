@@ -52,6 +52,17 @@ exports.handler = async (event) => {
     );
   }
 
+  try {
+    const storeEstado = getStore('credenciales-juego');
+    const estado = await storeEstado.get('estado', { type: 'json' });
+    if (estado?.suspendido === true) {
+      return respuesta({ error: 'Acceso temporalmente suspendido.' }, 403);
+    }
+  } catch (err) {
+    console.error('login: error al revisar el estado de suspensión:', err);
+    // Si falla la lectura del estado, no se bloquea el login por un error nuestro.
+  }
+
   let datos;
   try {
     datos = JSON.parse(event.body || '{}');
